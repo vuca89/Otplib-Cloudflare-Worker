@@ -1,0 +1,10 @@
+{
+  "name": "otplib-app",
+  "compatibility_date": "2025-03-21",
+  "main": "index.js",
+  "assets": {
+    "directory": "./assets",
+    "binding": "ASSETS",
+    "not_found_handling": "404-page"
+  }
+}
