@@ -357,8 +357,23 @@ if (toggleThemeBtn) {
 toggleTheme(isDarkTheme());
 
 // ── Bootstrap i18n ────────────────────────────────────────────────────────
-const savedLang = localStorage.getItem(LANG_STORAGE_KEY) || 'en';
+const SUPPORTED_LANGS = Object.keys(LANG_LABELS);
+
+const detectBrowserLang = () => {
+  const tags = navigator.languages?.length
+    ? navigator.languages
+    : navigator.language
+      ? [navigator.language]
+      : [];
+  const bases = tags.map(tag => tag.split('-')[0].toLowerCase());
+  // Prefer the first non-English supported language
+  const nonEn = bases.find(b => b !== 'en' && SUPPORTED_LANGS.includes(b));
+  if (nonEn) return nonEn;
+  // Fallback: use English if explicitly listed, otherwise default
+  return bases.includes('en') ? 'en' : 'en';
+};
+
+const savedLang = localStorage.getItem(LANG_STORAGE_KEY) || detectBrowserLang();
 loadLang(savedLang);
 
 })();
-
