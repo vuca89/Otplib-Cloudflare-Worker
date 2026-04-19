@@ -10,6 +10,9 @@ const copyBtn = document.getElementById('copyBtn');
 const timerContainer = document.getElementById('timerContainer');
 const timerCount = document.getElementById('timerCount');
 const timerBar = document.getElementById('timerBar');
+const timerToggleBtn = document.getElementById('timerToggleBtn');
+const pauseIcon = document.getElementById('pauseIcon');
+const playIcon = document.getElementById('playIcon');
 
 // ── Constants ─────────────────────────────────────────────────────────────
 
@@ -31,6 +34,9 @@ const COPY_TITLE_DEFAULT = 'Copy OTP';
 const COPY_TITLE_SUCCESS = 'Copied!';
 const COPY_TITLE_FAIL    = 'Copy failed';
 
+const TIMER_TOGGLE_TITLE_PAUSE  = 'Pause';
+const TIMER_TOGGLE_TITLE_RESUME = 'Resume';
+
 // ───────────────────────────────────────────────────────────────────────────
 
 let timeoutClearLabel = null;
@@ -38,8 +44,16 @@ let timeoutBlur = null;
 let refreshInterval = null;
 let lastPeriod = null;
 let currentSecret = null;
+let isPaused = false;
 
 // OTP generation
+
+const updateTimerToggleBtn = () => {
+  if (!timerToggleBtn) return;
+  timerToggleBtn.title = isPaused ? TIMER_TOGGLE_TITLE_RESUME : TIMER_TOGGLE_TITLE_PAUSE;
+  if (pauseIcon) pauseIcon.classList.toggle('hidden', isPaused);
+  if (playIcon) playIcon.classList.toggle('hidden', !isPaused);
+};
 
 const updateTimer = () => {
   const secondsInPeriod = Math.floor(Date.now() / 1000) % OTP_PERIOD_SECONDS;
@@ -55,30 +69,51 @@ const stopAutoRefresh = () => {
   }
   currentSecret = null;
   lastPeriod = null;
+  isPaused = false;
   if (timerContainer) timerContainer.classList.add('hidden');
+};
+
+const pauseAutoRefresh = () => {
+  if (refreshInterval) {
+    clearInterval(refreshInterval);
+    refreshInterval = null;
+  }
+  isPaused = true;
+  updateTimerToggleBtn();
+};
+
+const onTimerTick = () => {
+  updateTimer();
+  const currentPeriod = Math.floor(Date.now() / OTP_PERIOD_MS);
+  if (currentPeriod !== lastPeriod) {
+    lastPeriod = currentPeriod;
+    try {
+      const otp = otplib.authenticator.generate(currentSecret);
+      if (resultLabel) resultLabel.innerText = `${MSG_OTP_PREFIX}${otp}`;
+    } catch (e) {
+      // secret became invalid; stop refreshing
+      stopAutoRefresh();
+    }
+  }
+};
+
+const resumeAutoRefresh = () => {
+  if (!currentSecret) return;
+  isPaused = false;
+  updateTimerToggleBtn();
+  onTimerTick();
+  refreshInterval = setInterval(onTimerTick, TIMER_TICK_MS);
 };
 
 const startAutoRefresh = (secret) => {
   stopAutoRefresh();
   currentSecret = secret;
   lastPeriod = Math.floor(Date.now() / OTP_PERIOD_MS);
+  isPaused = false;
+  updateTimerToggleBtn();
   updateTimer();
   if (timerContainer) timerContainer.classList.remove('hidden');
-
-  refreshInterval = setInterval(() => {
-    updateTimer();
-    const currentPeriod = Math.floor(Date.now() / OTP_PERIOD_MS);
-    if (currentPeriod !== lastPeriod) {
-      lastPeriod = currentPeriod;
-      try {
-        const otp = otplib.authenticator.generate(currentSecret);
-        if (resultLabel) resultLabel.innerText = `${MSG_OTP_PREFIX}${otp}`;
-      } catch (e) {
-        // secret became invalid; stop refreshing
-        stopAutoRefresh();
-      }
-    }
-  }, TIMER_TICK_MS);
+  refreshInterval = setInterval(onTimerTick, TIMER_TICK_MS);
 };
 
 const clearLabel = () => {
@@ -165,6 +200,16 @@ if (toggleSecretBtn && inputField) {
     inputField.type = isPassword ? 'text' : 'password';
     if (eyeIcon) eyeIcon.classList.toggle('hidden', isPassword);
     if (eyeOffIcon) eyeOffIcon.classList.toggle('hidden', !isPassword);
+  });
+}
+
+if (timerToggleBtn) {
+  timerToggleBtn.addEventListener('click', function () {
+    if (isPaused) {
+      resumeAutoRefresh();
+    } else {
+      pauseAutoRefresh();
+    }
   });
 }
 

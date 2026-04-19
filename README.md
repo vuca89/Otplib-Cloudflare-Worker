@@ -6,9 +6,11 @@ A TOTP one-time password (OTP) generator running on Cloudflare Workers with a br
 
 - Generate TOTP codes from any Base32 secret key
 - Auto-refreshes every 30 seconds with a live countdown timer
+- Pause / resume the countdown timer with a dedicated button
 - Copy OTP to clipboard with one click
 - Secret key input with show/hide toggle
-- Dark / light theme toggle
+- Dark / light theme toggle (persists across sessions via `localStorage`)
+- `frame-ancestors 'none'` enforced via HTTP response header for full browser support
 - No build tools required — plain HTML, Tailwind CDN, and Vanilla JS
 
 ## Prerequisites
