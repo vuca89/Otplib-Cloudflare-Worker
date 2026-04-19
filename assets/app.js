@@ -1,3 +1,5 @@
+(async () => {
+
 const inputField = document.getElementById('inputField');
 const submitBtn = document.getElementById('submitBtn');
 const form = document.getElementById('form');
@@ -357,4 +359,6 @@ toggleTheme(isDarkTheme());
 // ── Bootstrap i18n ────────────────────────────────────────────────────────
 const savedLang = localStorage.getItem(LANG_STORAGE_KEY) || 'en';
 loadLang(savedLang);
+
+})();
 
