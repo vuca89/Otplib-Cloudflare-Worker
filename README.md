@@ -6,6 +6,7 @@ A TOTP one-time password (OTP) generator running on Cloudflare Workers with a br
 
 - Generate TOTP codes from any Base32 secret key
 - Auto-refreshes every 30 seconds with a live countdown timer
+- Auto-stops after 5 minutes of inactivity with an in-app alert; click **Generate** to restart
 - Pause / resume the countdown timer with a dedicated button
 - Copy OTP to clipboard with one click
 - Secret key input with show/hide toggle

@@ -13,6 +13,8 @@ const timerBar = document.getElementById('timerBar');
 const timerToggleBtn = document.getElementById('timerToggleBtn');
 const pauseIcon = document.getElementById('pauseIcon');
 const playIcon = document.getElementById('playIcon');
+const autoStopAlert = document.getElementById('autoStopAlert');
+// const autoStopAlertDismiss = document.getElementById('autoStopAlertDismiss');
 
 // ── Constants ─────────────────────────────────────────────────────────────
 
@@ -37,6 +39,9 @@ const COPY_TITLE_FAIL    = 'Copy failed';
 const TIMER_TOGGLE_TITLE_PAUSE  = 'Pause';
 const TIMER_TOGGLE_TITLE_RESUME = 'Resume';
 
+const AUTO_STOP_MINUTES    = 5;
+const AUTO_STOP_TIMEOUT_MS = AUTO_STOP_MINUTES * 60 * 1000;
+
 // ───────────────────────────────────────────────────────────────────────────
 
 let timeoutClearLabel = null;
@@ -45,8 +50,19 @@ let refreshInterval = null;
 let lastPeriod = null;
 let currentSecret = null;
 let isPaused = false;
+let autoStopTimeout = null;
 
 // OTP generation
+
+const showAutoStopAlert = () => {
+  if (autoStopAlert) autoStopAlert.classList.remove('hidden');
+};
+
+/*
+const hideAutoStopAlert = () => {
+  if (autoStopAlert) autoStopAlert.classList.add('hidden');
+};
+*/
 
 const updateTimerToggleBtn = () => {
   if (!timerToggleBtn) return;
@@ -67,10 +83,19 @@ const stopAutoRefresh = () => {
     clearInterval(refreshInterval);
     refreshInterval = null;
   }
+  if (autoStopTimeout) {
+    clearTimeout(autoStopTimeout);
+    autoStopTimeout = null;
+  }
   currentSecret = null;
   lastPeriod = null;
   isPaused = false;
   if (timerContainer) timerContainer.classList.add('hidden');
+};
+
+const autoStop = () => {
+  stopAutoRefresh();
+  showAutoStopAlert();
 };
 
 const pauseAutoRefresh = () => {
@@ -114,6 +139,7 @@ const startAutoRefresh = (secret) => {
   updateTimer();
   if (timerContainer) timerContainer.classList.remove('hidden');
   refreshInterval = setInterval(onTimerTick, TIMER_TICK_MS);
+  autoStopTimeout = setTimeout(autoStop, AUTO_STOP_TIMEOUT_MS);
 };
 
 const clearLabel = () => {
@@ -121,6 +147,7 @@ const clearLabel = () => {
   resultLabel.innerText = '';
   clearTimeout(timeoutClearLabel);
   if (copyBtn) copyBtn.classList.add('hidden');
+  // hideAutoStopAlert();
   stopAutoRefresh();
 };
 
@@ -213,6 +240,14 @@ if (timerToggleBtn) {
   });
 }
 
+/*
+if (autoStopAlertDismiss) {
+  autoStopAlertDismiss.addEventListener('click', function () {
+    hideAutoStopAlert();
+  });
+}
+*/
+
 // --------
 
 // Theme switcher
@@ -244,3 +279,6 @@ if (toggleThemeBtn) {
 }
 
 toggleTheme(isDarkTheme());
+
+document.getElementById('autostop-time').innerText = AUTO_STOP_MINUTES;
+
