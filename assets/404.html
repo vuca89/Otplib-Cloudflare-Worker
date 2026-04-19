@@ -4,15 +4,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.tailwindcss.com 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'none'; frame-ancestors 'none';">
   <title>One-Time Password (OTP) generate</title>
   <!-- Link to Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    // Enable dark mode based on system preference
-    tailwind.config = {
-      darkMode: ['class', '[data-theme="dark"]'],
-    };
-  </script>
+  <script src="/tailwind-config.js"></script>
 </head>
 
 <body class="bg-gray-100 dark:bg-gray-900 flex justify-center items-center h-screen flex-col">
@@ -35,7 +31,6 @@
       <a href="/" class="block text-center text-blue-500 mt-4 dark:text-blue-400">Back to home</a>
     </div>
   </div>
-  <script src="/app.js"></script>
 </body>
 
 </html>

@@ -4,56 +4,136 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.tailwindcss.com https://unpkg.com 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://unpkg.com;">
   <title>One-Time Password (OTP) generate</title>
   <!-- Link to Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    // Enable dark mode based on system preference
-    tailwind.config = {
-      darkMode: ['class', '[data-theme="dark"]'],
-    };
-  </script>
+  <script src="/tailwind-config.js"></script>
 </head>
 
 <body class="bg-gray-100 dark:bg-gray-900 flex justify-center items-center h-screen flex-col">
-  <h1 class="text-2xl font-semibold text-center mb-4 text-gray-900 dark:text-white">One-Time Password (OTP) generate</h1>
+  <h1 class="text-2xl font-semibold text-center mb-4 text-gray-900 dark:text-white" data-i18n="h1">One-Time Password (OTP) generate</h1>
 
-  <button id="toggleThemeBtn" class="absolute top-0 right-0 m-4 p-2 bg-gray-200 dark:bg-gray-600 rounded-lg">
+  <div class="absolute top-0 right-0 m-4 flex items-center gap-2">
+    <!-- Language picker -->
+    <div class="relative">
+      <button id="langBtn" class="p-2 bg-gray-200 dark:bg-gray-600 rounded-lg text-gray-800 dark:text-white text-sm font-medium flex items-center gap-1" title="Language">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m7.5-6.923c-.67.204-1.335.82-1.887 1.855A8 8 0 0 0 5.145 4H7.5zM4.09 4a9.3 9.3 0 0 1 .64-1.539 7 7 0 0 1 .597-.933A7.03 7.03 0 0 0 2.255 4zm-.582 3.5c.03-.877.138-1.718.312-2.5H1.674a7 7 0 0 0-.656 2.5zM4.847 5a12.5 12.5 0 0 0-.338 2.5H7.5V5zM8.5 5v2.5h2.99a12.5 12.5 0 0 0-.337-2.5zM4.51 8.5a12.5 12.5 0 0 0 .337 2.5H7.5V8.5zm3.99 0V11h2.653c.187-.765.306-1.608.338-2.5zM5.145 12q.208.58.468 1.068c.552 1.035 1.218 1.65 1.887 1.855V12zm.182 2.472a7 7 0 0 1-.597-.933A9.3 9.3 0 0 1 4.09 12H2.255a7 7 0 0 0 3.072 2.472M3.82 11a13.7 13.7 0 0 1-.312-2.5h-2.49c.062.89.291 1.733.656 2.5zm6.853 3.472A7 7 0 0 0 13.745 12H11.91a9.3 9.3 0 0 1-.64 1.539 7 7 0 0 1-.597.933M8.5 12v2.923c.67-.204 1.335-.82 1.887-1.855q.26-.487.468-1.068zm3.68-1h2.146c.365-.767.594-1.61.656-2.5h-2.49a13.7 13.7 0 0 1-.312 2.5m2.802-3.5a7 7 0 0 0-.656-2.5H12.18c.174.782.282 1.623.312 2.5zM11.27 2.461c.247.464.462.98.64 1.539h1.835a7 7 0 0 0-3.072-2.472c.218.284.418.598.597.933M10.855 4a8 8 0 0 0-.468-1.068C9.835 1.897 9.17 1.282 8.5 1.077V4z"/>
+        </svg>
+        <span id="langBtnLabel">EN</span>
+      </button>
+      <div id="langDropdown" class="hidden absolute right-0 mt-1 w-36 bg-white dark:bg-gray-700 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 z-50 py-1 text-sm">
+        <button class="lang-option w-full text-left px-3 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-800 dark:text-white" data-lang="en">🇬🇧 English</button>
+        <button class="lang-option w-full text-left px-3 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-800 dark:text-white" data-lang="ja">🇯🇵 日本語</button>
+        <button class="lang-option w-full text-left px-3 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-800 dark:text-white" data-lang="ko">🇰🇷 한국어</button>
+        <button class="lang-option w-full text-left px-3 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-800 dark:text-white" data-lang="de">🇩🇪 Deutsch</button>
+        <button class="lang-option w-full text-left px-3 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-800 dark:text-white" data-lang="th">🇹🇭 ภาษาไทย</button>
+        <button class="lang-option w-full text-left px-3 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-800 dark:text-white" data-lang="zh">🇨🇳 中文</button>
+        <button class="lang-option w-full text-left px-3 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-800 dark:text-white" data-lang="vi">🇻🇳 Tiếng Việt</button>
+      </div>
+    </div>
+    <!-- Theme toggle -->
+    <button id="toggleThemeBtn" class="p-2 bg-gray-200 dark:bg-gray-600 rounded-lg">
     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-palette-fill text-gray-800 dark:text-white" viewBox="0 0 16 16">
       <path d="M12.433 10.07C14.133 10.585 16 11.15 16 8a8 8 0 1 0-8 8c1.996 0 1.826-1.504 1.649-3.08-.124-1.101-.252-2.237.351-2.92.465-.527 1.42-.237 2.433.07M8 5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3m4.5 3a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3M5 6.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0m.5 6.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3"/>
     </svg>
-  </button>
+    </button>
+  </div>
 
-  <div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg w-1/2 lg:w-1/3">
+  <div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg md:w-2/3 lg:w-1/2 xl:w-2/5 xxl:w-1/3 mx-3">
     <div class="mx-auto mb-6 max-w-64 text-center">
       <img src="/favicon.png" alt="Logo" class="mx-auto lg:w-full w-4/5">
     </div>
     <form id="form">
       <div class="mb-4">
-        <label for="inputField" class="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
+        <label for="inputField" class="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300" data-i18n="labelSecretKey">
           Enter your secret key
         </label>
-        <input id="inputField" type="text" name="inputField"
-        class="mt-1 p-2 w-full border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white dark:border-gray-600"
-          placeholder="Enter your secret key" required>
+        <div class="relative">
+          <input id="inputField" type="password" name="inputField"
+            class="mt-1 p-2 pr-10 w-full border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white dark:border-gray-600"
+            placeholder="Enter your secret key" required autocomplete="off" data-i18n-placeholder="placeholderSecretKey">
+          <button id="toggleSecretBtn" type="button" title="Toggle visibility" data-i18n-title="toggleVisibility"
+            class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+            <!-- eye icon: visible when input is type="password" -->
+            <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z"/>
+              <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"/>
+            </svg>
+            <!-- eye-slash icon: visible when input is type="text" -->
+            <svg id="eyeOffIcon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="hidden">
+              <path d="M13.359 11.238C15.06 9.72 16 8 16 8s-3-5.5-8-5.5a7 7 0 0 0-2.79.588l.77.771A6 6 0 0 1 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755l.19.196zM11.297 9.176a3.5 3.5 0 0 0-4.474-4.474l.823.823a2.5 2.5 0 0 1 2.829 2.829zm-2.943 1.299.822.822a3.5 3.5 0 0 1-4.474-4.474l.823.823a2.5 2.5 0 0 0 2.829 2.829z"/>
+              <path d="M3.35 5.47q-.27.24-.518.487A13 13 0 0 0 1.172 8l.195.288c.335.48.83 1.12 1.465 1.755C4.121 11.332 5.881 12.5 8 12.5c.716 0 1.39-.133 2.02-.36l.77.772A7 7 0 0 1 8 13.5C3 13.5 0 8 0 8s.939-1.721 2.641-3.238l.708.709zm10.296 8.884-12-12 .708-.708 12 12z"/>
+            </svg>
+          </button>
+        </div>
       </div>
       <div class="mb-4">
         <button id="submitBtn" type="submit"
-          class="w-full py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 dark:bg-blue-700 dark:hover:bg-blue-600">Generate code</button>
+          class="w-full py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 dark:bg-blue-700 dark:hover:bg-blue-600" data-i18n="btnGenerate">Generate code</button>
       </div>
     </form>
-    <label id="resultLabel" class="block text-lime-600 dark:text-lime-400"></label>
+
+    <div id="timerContainer" class="hidden mb-2">
+      <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+        <button id="timerToggleBtn" type="button" title="Pause"
+          class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 flex-shrink-0">
+          <svg id="pauseIcon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M5.5 3.5A1.5 1.5 0 0 1 7 5v6a1.5 1.5 0 0 1-3 0V5a1.5 1.5 0 0 1 1.5-1.5m5 0A1.5 1.5 0 0 1 12 5v6a1.5 1.5 0 0 1-3 0V5a1.5 1.5 0 0 1 1.5-1.5"/>
+          </svg>
+          <svg id="playIcon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" class="hidden">
+            <path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393"/>
+          </svg>
+        </button>
+        <span class="whitespace-nowrap" data-i18n-timer>Refreshes in <span id="timerCount">30</span>s</span>
+        <div class="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+          <div id="timerBar" class="bg-blue-500 h-1.5 rounded-full" style="width:100%"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="autoStopAlert" class="mb-2 p-3 rounded-lg bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700 text-sm flex items-start gap-2">
+      <span class="flex-1 text-amber-800 dark:text-amber-200" id="autoStopAlertMsg">Auto-refresh stopped after <span id="autostop-time"></span> minutes. Click <strong>Generate</strong> to restart.</span>
+      <button id="autoStopAlertDismiss" type="button" data-i18n-title="autoStopDismiss" title="Dismiss"
+        class="hidden flex-shrink-0 text-amber-600 dark:text-amber-300 hover:text-amber-900 dark:hover:text-amber-100">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <label id="resultLabel" aria-live="polite" class="block text-lime-600 dark:text-lime-400"></label>
+      <button id="copyBtn" type="button" title="Copy OTP"
+        class="hidden text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-1 rounded">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1z"/>
+          <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0z"/>
+        </svg>
+      </button>
+    </div>
   </div>
 
   <p class="text-center text-gray-500 mt-4 dark:text-gray-400">
-    Made with ❤️ by <a href="https://workers.cloudflare.com/" target="_blank" class="text-blue-500 underline dark:text-blue-400">Cloudflare Workers</a>
+    <span data-i18n="footerMadeBy">Made with ❤️ by</span> <a href="https://workers.cloudflare.com/" target="_blank" class="text-blue-500 underline dark:text-blue-400">Cloudflare Workers</a>
   </p>
   <p class="text-center text-gray-500 mt-4 dark:text-gray-400">
-    Please refer to: <a href="https://otplib.yeojz.dev" target="_blank" class="text-orange-500 underline dark:text-orange-400">https://otplib.yeojz.dev</a> for more information
+    <span data-i18n="footerReferTo">Please refer to:</span> <a href="https://otplib.yeojz.dev" target="_blank" class="text-orange-500 underline dark:text-orange-400">https://otplib.yeojz.dev</a> <span data-i18n="footerReferSuffix">for more information</span>
   </p>
 
-  <script src="https://unpkg.com/@otplib/preset-browser@^12.0.1/buffer.js"></script>
-  <script src="https://unpkg.com/@otplib/preset-browser@^12.0.1/index.js"></script>
+  <div class="mt-6 mx-4 p-4 rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 text-sm text-red-800 dark:text-red-200">
+    <p class="font-semibold mb-1" data-i18n="disclaimerTitle">⚠️ Important Disclaimer</p>
+    <ul class="list-disc list-inside space-y-1">
+      <li data-i18n-html="disclaimerLine1">This tool is intended for <strong>quick MFA code testing only</strong>. It does <strong>not</strong> store your secret key or any other data.</li>
+      <li data-i18n-html="disclaimerLine2"><strong>Save your secret key in a safe place</strong> before leaving this page. Losing it may permanently lock you out of your account.</li>
+      <li data-i18n-html="disclaimerLine3">We accept <strong>no responsibility</strong> for any loss of access resulting from a lost or misplaced secret key.</li>
+      <li data-i18n-html="disclaimerLine4">You can audit the full source code at <a href="https://github.com/vuca89/Otplib-Cloudflare-Worker" target="_blank" rel="noopener noreferrer" class="underline font-medium hover:text-red-600 dark:hover:text-red-100">github.com/vuca89/Otplib-Cloudflare-Worker</a>.</li>
+    </ul>
+  </div>
+
+  <script src="https://unpkg.com/@otplib/preset-browser@12.0.1/buffer.js"></script>
+  <script src="https://unpkg.com/@otplib/preset-browser@12.0.1/index.js"></script>
   <script src="/app.js"></script>
 
 </body>

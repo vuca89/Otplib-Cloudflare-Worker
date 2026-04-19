@@ -6,5 +6,10 @@
     "directory": "./assets",
     "binding": "ASSETS",
     "not_found_handling": "404-page"
+  },
+  "env": {
+    "production": {
+      "name": "otplib-app-production"
+    }
   }
 }
