@@ -1,4 +1,5 @@
 # Otplib Cloudflare Worker
+> 🌐 Language / Ngôn ngữ: **English** | [Tiếng Việt](README.vi.md)
 
 A TOTP one-time password (OTP) generator running on Cloudflare Workers with a browser-based UI.
 
@@ -61,6 +62,18 @@ wrangler deploy --env production
 │       ├── zh.json
 │       └── vi.json
 ```
+
+## Technologies Used
+
+| Layer | Technology |
+|---|---|
+| Runtime | [Cloudflare Workers](https://workers.cloudflare.com/) |
+| OTP Library | [otplib](https://otplib.yeojz.dev) v12 (browser preset via unpkg CDN) |
+| Styling | [Tailwind CSS](https://tailwindcss.com/) v3 (CDN, no build step) |
+| Frontend | Vanilla JavaScript (ES6+) |
+| i18n | Custom lazy-load engine — locale JSON files fetched on demand |
+| Storage | `localStorage` (theme preference, language preference) |
+| Build tools | None |
 
 ## Credits
 
