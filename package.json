@@ -1,6 +1,12 @@
 {
+  "name": "otplib-cloudflare-worker",
+  "version": "1.0.0",
+  "description": "A Cloudflare Worker that serves a TOTP generator web app using otplib",
+  "main": "index.js",
+  "author": "Đăng Khoa <i.am@dangkhoa.dev>",
+  "license": "MIT",
   "devDependencies": {
-    "wrangler": "^4.3.0"
+    "wrangler": "^4.83.0"
   },
   "scripts": {
     "build": "wrangler build",
