@@ -14,7 +14,11 @@ const timerToggleBtn = document.getElementById('timerToggleBtn');
 const pauseIcon = document.getElementById('pauseIcon');
 const playIcon = document.getElementById('playIcon');
 const autoStopAlert = document.getElementById('autoStopAlert');
+const autoStopAlertMsg = document.getElementById('autoStopAlertMsg');
 // const autoStopAlertDismiss = document.getElementById('autoStopAlertDismiss');
+const langBtn = document.getElementById('langBtn');
+const langBtnLabel = document.getElementById('langBtnLabel');
+const langDropdown = document.getElementById('langDropdown');
 
 // ── Constants ─────────────────────────────────────────────────────────────
 
@@ -29,18 +33,11 @@ const DARK_THEME_CODE   = 'dark';
 const LIGHT_THEME_CODE  = 'light';
 const THEME_STORAGE_KEY = 'theme';
 
-const MSG_OTP_PREFIX     = 'Your OTP is: ';
-const MSG_INVALID_SECRET = 'Invalid secret key';
-const MSG_VALID_REQUIRED = 'Please enter a valid secret key';
-const COPY_TITLE_DEFAULT = 'Copy OTP';
-const COPY_TITLE_SUCCESS = 'Copied!';
-const COPY_TITLE_FAIL    = 'Copy failed';
-
-const TIMER_TOGGLE_TITLE_PAUSE  = 'Pause';
-const TIMER_TOGGLE_TITLE_RESUME = 'Resume';
-
 const AUTO_STOP_MINUTES    = 5;
 const AUTO_STOP_TIMEOUT_MS = AUTO_STOP_MINUTES * 60 * 1000;
+
+const LANG_STORAGE_KEY = 'lang';
+const LANG_LABELS = { en: 'EN', ja: 'JA', ko: 'KO', de: 'DE', th: 'TH', zh: 'ZH', vi: 'VI' };
 
 // ───────────────────────────────────────────────────────────────────────────
 
@@ -52,10 +49,86 @@ let currentSecret = null;
 let isPaused = false;
 let autoStopTimeout = null;
 
-// OTP generation
+// ── i18n ──────────────────────────────────────────────────────────────────
+
+let currentLocale = {};
+
+const t = (key) => currentLocale[key] || key;
+
+const applyTranslations = () => {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (currentLocale[key] !== undefined) el.textContent = currentLocale[key];
+  });
+  document.querySelectorAll('[data-i18n-html]').forEach(el => {
+    const key = el.getAttribute('data-i18n-html');
+    if (currentLocale[key] !== undefined) el.innerHTML = currentLocale[key];
+  });
+  document.querySelectorAll('[data-i18n-title]').forEach(el => {
+    const key = el.getAttribute('data-i18n-title');
+    if (currentLocale[key] !== undefined) el.title = currentLocale[key];
+  });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    const key = el.getAttribute('data-i18n-placeholder');
+    if (currentLocale[key] !== undefined) el.placeholder = currentLocale[key];
+  });
+  // Timer text uses special template with timerCount span preserved
+  const timerSpan = document.querySelector('[data-i18n-timer]');
+  if (timerSpan && currentLocale.timerRefreshesIn) {
+    const count = document.getElementById('timerCount');
+    const countVal = count ? count.textContent : OTP_PERIOD_SECONDS;
+    timerSpan.innerHTML = `${currentLocale.timerRefreshesIn} <span id="timerCount">${countVal}</span>${currentLocale.timerSeconds}`;
+  }
+  // Auto-stop alert message
+  if (autoStopAlertMsg && currentLocale.autoStopMsg) {
+    autoStopAlertMsg.innerHTML = currentLocale.autoStopMsg.replace('{minutes}', AUTO_STOP_MINUTES);
+  }
+  // Page title
+  if (currentLocale.pageTitle) document.title = currentLocale.pageTitle;
+  // Update pause/resume button title based on current state
+  if (timerToggleBtn) {
+    timerToggleBtn.title = isPaused ? t('timerResume') : t('timerPause');
+  }
+};
+
+const loadLang = async (lang) => {
+  try {
+    const res = await fetch(`/locales/${lang}.json`);
+    if (!res.ok) throw new Error('Not found');
+    currentLocale = await res.json();
+  } catch {
+    // Fallback: keep current locale
+    return;
+  }
+  localStorage.setItem(LANG_STORAGE_KEY, lang);
+  if (langBtnLabel) langBtnLabel.textContent = LANG_LABELS[lang] || lang.toUpperCase();
+  applyTranslations();
+};
+
+// Language dropdown toggle
+if (langBtn && langDropdown) {
+  langBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    langDropdown.classList.toggle('hidden');
+  });
+  document.addEventListener('click', () => langDropdown.classList.add('hidden'));
+  langDropdown.querySelectorAll('.lang-option').forEach(btn => {
+    btn.addEventListener('click', () => {
+      loadLang(btn.dataset.lang);
+      langDropdown.classList.add('hidden');
+    });
+  });
+}
+
+// ──────────────────────────────────────────────────────────────────────────
 
 const showAutoStopAlert = () => {
   if (autoStopAlert) autoStopAlert.classList.remove('hidden');
+  // if (autoStopAlertDismiss) autoStopAlertDismiss.classList.remove('hidden');
+  // Re-apply translated message in case lang changed while running
+  if (autoStopAlertMsg && currentLocale.autoStopMsg) {
+    autoStopAlertMsg.innerHTML = currentLocale.autoStopMsg.replace('{minutes}', AUTO_STOP_MINUTES);
+  }
 };
 
 /*
@@ -66,7 +139,7 @@ const hideAutoStopAlert = () => {
 
 const updateTimerToggleBtn = () => {
   if (!timerToggleBtn) return;
-  timerToggleBtn.title = isPaused ? TIMER_TOGGLE_TITLE_RESUME : TIMER_TOGGLE_TITLE_PAUSE;
+  timerToggleBtn.title = isPaused ? t('timerResume') : t('timerPause');
   if (pauseIcon) pauseIcon.classList.toggle('hidden', isPaused);
   if (playIcon) playIcon.classList.toggle('hidden', !isPaused);
 };
@@ -74,7 +147,8 @@ const updateTimerToggleBtn = () => {
 const updateTimer = () => {
   const secondsInPeriod = Math.floor(Date.now() / 1000) % OTP_PERIOD_SECONDS;
   const secondsLeft = OTP_PERIOD_SECONDS - secondsInPeriod;
-  if (timerCount) timerCount.innerText = secondsLeft;
+  const timerCountEl = document.getElementById('timerCount');
+  if (timerCountEl) timerCountEl.innerText = secondsLeft;
   if (timerBar) timerBar.style.width = `${(secondsLeft / OTP_PERIOD_SECONDS) * 100}%`;
 };
 
@@ -114,7 +188,7 @@ const onTimerTick = () => {
     lastPeriod = currentPeriod;
     try {
       const otp = otplib.authenticator.generate(currentSecret);
-      if (resultLabel) resultLabel.innerText = `${MSG_OTP_PREFIX}${otp}`;
+        if (resultLabel) resultLabel.innerText = `${t('msgOtpPrefix')}${otp}`;
     } catch (e) {
       // secret became invalid; stop refreshing
       stopAutoRefresh();
@@ -159,18 +233,18 @@ const handleForm = () => {
   let value = inputField.value;
   value = value.replace(/\s/g, '');
   if (!value) {
-    resultLabel.innerText = MSG_VALID_REQUIRED;
+    resultLabel.innerText = t('msgValidRequired');
     timeoutClearLabel = setTimeout(clearLabel, ERROR_CLEAR_TIMEOUT_MS);
     return;
   }
 
   try {
     const otp = otplib.authenticator.generate(value);
-    resultLabel.innerText = `${MSG_OTP_PREFIX}${otp}`;
+    resultLabel.innerText = `${t('msgOtpPrefix')}${otp}`;
     if (copyBtn) copyBtn.classList.remove('hidden');
     startAutoRefresh(value);
   } catch (e) {
-    resultLabel.innerText = MSG_INVALID_SECRET;
+    resultLabel.innerText = t('msgInvalidSecret');
     timeoutClearLabel = setTimeout(clearLabel, ERROR_CLEAR_TIMEOUT_MS);
   }
 };
@@ -207,14 +281,14 @@ if (form) {
 if (copyBtn) {
   copyBtn.addEventListener('click', function () {
     if (!resultLabel) return;
-    const otp = resultLabel.innerText.replace(MSG_OTP_PREFIX, '').trim();
+    const otp = resultLabel.innerText.replace(t('msgOtpPrefix'), '').trim();
     if (!otp) return;
     navigator.clipboard.writeText(otp).then(() => {
-      copyBtn.title = COPY_TITLE_SUCCESS;
-      setTimeout(() => { copyBtn.title = COPY_TITLE_DEFAULT; }, COPY_FEEDBACK_TIMEOUT_MS);
+      copyBtn.title = t('copiedSuccess');
+      setTimeout(() => { copyBtn.title = t('copyOtp'); }, COPY_FEEDBACK_TIMEOUT_MS);
     }).catch(() => {
-      copyBtn.title = COPY_TITLE_FAIL;
-      setTimeout(() => { copyBtn.title = COPY_TITLE_DEFAULT; }, COPY_FEEDBACK_TIMEOUT_MS);
+      copyBtn.title = t('copyFailed');
+      setTimeout(() => { copyBtn.title = t('copyOtp'); }, COPY_FEEDBACK_TIMEOUT_MS);
     });
   });
 }
@@ -280,5 +354,7 @@ if (toggleThemeBtn) {
 
 toggleTheme(isDarkTheme());
 
-document.getElementById('autostop-time').innerText = AUTO_STOP_MINUTES;
+// ── Bootstrap i18n ────────────────────────────────────────────────────────
+const savedLang = localStorage.getItem(LANG_STORAGE_KEY) || 'en';
+loadLang(savedLang);
 

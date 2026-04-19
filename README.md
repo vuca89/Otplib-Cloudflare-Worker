@@ -4,6 +4,7 @@ A TOTP one-time password (OTP) generator running on Cloudflare Workers with a br
 
 ## Features
 
+- Multi-language UI (English, Japanese, Korean, German, Thai, Chinese, Vietnamese) — locale files loaded on demand
 - Generate TOTP codes from any Base32 secret key
 - Auto-refreshes every 30 seconds with a live countdown timer
 - Auto-stops after 5 minutes of inactivity with an in-app alert; click **Generate** to restart
@@ -48,8 +49,17 @@ wrangler deploy --env production
 │   ├── index.html    # Main app UI
 │   ├── 404.html      # 404 error page
 │   ├── app.js        # Frontend JavaScript
+│   ├── tailwind-config.js
 │   ├── favicon.ico
-│   └── favicon.png
+│   ├── favicon.png
+│   └── locales/      # i18n locale files (loaded on demand)
+│       ├── en.json
+│       ├── ja.json
+│       ├── ko.json
+│       ├── de.json
+│       ├── th.json
+│       ├── zh.json
+│       └── vi.json
 ```
 
 ## Credits
